@@ -45,9 +45,16 @@ LEFT JOIN ksiegowosc.premia as prem ON prem.id_premii = wyn.id_premii
 
 SELECT 
 		CONCAT(	'Pracownik ', pr.imie, ' ', pr.nazwisko, ', w dniu ', g.data, 
-		' otrzyma³ pensje ca³kowit¹ na kwote ', ISNULL(pm.kwota,0)+pe.kwota, 
-		' z³, gdzie wynagrodzenie zasadnicze wynosi³o: ', pe.kwota, ' z³, premia: ', pm.kwota,
-		' z³, nadgodziny: 0 z³') as raport
+		' otrzyma³ pensje ca³kowit¹ na kwote ',
+		CASE WHEN g.liczba_godzin-160>0 
+		THEN ISNULL(pm.kwota,0)+pe.kwota+(g.liczba_godzin-160)*20
+		WHEN g.liczba_godzin-160<=0 THEN ISNULL(pm.kwota,0)+pe.kwota END,
+		' z³, gdzie wynagrodzenie zasadnicze wynosi³o: ', pe.kwota, ' z³, premia: ', ISNULL(pm.kwota,0),
+		' z³, nadgodziny: ',  
+		CASE WHEN g.liczba_godzin-160>0  
+		THEN (g.liczba_godzin-160)*20
+		WHEN g.liczba_godzin-160<=0 THEN 0 END, 
+		'z³') as raport
 FROM ksiegowosc.pracownicy as pr
 INNER JOIN ksiegowosc.wynagrodzenie as wyn ON pr.id_pracownika = wyn.id_pracownika
 INNER JOIN ksiegowosc.pensja as pe ON pe.id_pensji = wyn.id_pensji
